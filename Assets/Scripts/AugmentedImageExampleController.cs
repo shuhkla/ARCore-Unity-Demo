@@ -41,10 +41,18 @@ namespace GoogleARCore.Examples.AugmentedImage
         /// </summary>
         public GameObject FitToScanOverlay;
 
+        public GameObject Box;
+
         private Dictionary<int, AugmentedImageVisualizer> m_Visualizers
             = new Dictionary<int, AugmentedImageVisualizer>();
 
         private List<AugmentedImage> m_TempAugmentedImages = new List<AugmentedImage>();
+
+        public void Start()
+        {
+            Box = GameObject.Find("Box");
+            Box.SetActive(false);
+        }
 
         /// <summary>
         /// The Unity Update method.
@@ -68,36 +76,46 @@ namespace GoogleARCore.Examples.AugmentedImage
 
             // Create visualizers and anchors for updated augmented images that are tracking and do not previously
             // have a visualizer. Remove visualizers for stopped images.
+            bool foundSomething = false;
             foreach (var image in m_TempAugmentedImages)
             {
                 AugmentedImageVisualizer visualizer = null;
                 m_Visualizers.TryGetValue(image.DatabaseIndex, out visualizer);
-                if (image.TrackingState == TrackingState.Tracking && visualizer == null)
+                if (image.TrackingState == TrackingState.Tracking)
                 {
-                    // Create an anchor to ensure that ARCore keeps tracking this augmented image.
-                    Anchor anchor = image.CreateAnchor(image.CenterPose);
-                    visualizer = (AugmentedImageVisualizer)Instantiate(AugmentedImageVisualizerPrefab, anchor.transform);
-                    visualizer.Image = image;
-                    m_Visualizers.Add(image.DatabaseIndex, visualizer);
+                    foundSomething = true;
+                    break;
+                    //Box.SetActive(true);
+                    //// Create an anchor to ensure that ARCore keeps tracking this augmented image.
+                    //Anchor anchor = image.CreateAnchor(image.CenterPose);
+                    //visualizer = (AugmentedImageVisualizer)Instantiate(AugmentedImageVisualizerPrefab, anchor.transform);
+                    //visualizer.Image = image;
+                    //m_Visualizers.Add(image.DatabaseIndex, visualizer);
                 }
-                else if (image.TrackingState == TrackingState.Stopped && visualizer != null)
+                else if (image.TrackingState == TrackingState.Stopped)
                 {
-                    m_Visualizers.Remove(image.DatabaseIndex);
-                    GameObject.Destroy(visualizer.gameObject);
+                    //Box.SetActive(false);
+                    //m_Visualizers.Remove(image.DatabaseIndex);
+                    //GameObject.Destroy(visualizer.gameObject);
                 }
             }
+
+            Box.SetActive(foundSomething);
+            FitToScanOverlay.SetActive(!foundSomething);
 
             // Show the fit-to-scan overlay if there are no images that are Tracking.
-            foreach (var visualizer in m_Visualizers.Values)
-            {
-                if (visualizer.Image.TrackingState == TrackingState.Tracking)
-                {
-                    FitToScanOverlay.SetActive(false);
-                    return;
-                }
-            }
+            //foreach (var visualizer in m_Visualizers.Values)
+            //{
+            //    if (visualizer.Image.TrackingState == TrackingState.Tracking)
+            //    {
+            //        Box.SetActive(true);
+            //        FitToScanOverlay.SetActive(false);
+            //        return;
+            //    }
+            //}
 
-            FitToScanOverlay.SetActive(true);
+            //Box.SetActive(false);
+            //FitToScanOverlay.SetActive(true);
         }
     }
 }
